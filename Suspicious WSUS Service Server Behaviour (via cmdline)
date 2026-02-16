@@ -1,0 +1,86 @@
+title: Suspicious WSUS Service Server Behaviour (via cmdline)
+id: efdd264f-b656-4de3-8afa-dc00e15e2da9
+status: stable
+description: Identifies WSUS service process spawning unusual child processes, which may be an indicator of WSUS compromise and further malicious commands execution.
+references:
+    - https://www.huntress.com/blog/exploitation-of-windows-server-update-services-remote-code-execution-vulnerability #CVE-2025-59287
+    - https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-59287
+    - https://unit42.paloaltonetworks.com/microsoft-cve-2025-59287/
+    - https://www.cisa.gov/news-events/alerts/2025/10/24/microsoft-releases-out-band-security-update-mitigate-windows-server-update-service-vulnerability-cve
+    - https://asec.ahnlab.com/en/91166/
+author: SOC Prime Team
+tags:
+    - attack.initial_access
+    - attack.lateral_movement
+    - attack.t1190
+    - attack.t1210
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        ParentImage|endswith: 'wsusservice.exe' #example: wsusservice.exe → cmd.exe → cmd.exe → powershell.exe
+        Image|endswith:
+            - 'cmd.exe'
+            - 'powershell.exe'
+            - 'AppVLP.exe' # LOLBINS LIST START
+            - 'rundll32.exe'
+            - 'Cmstp.exe'
+            - 'Esentutl.exe'
+            - 'Eventvwr.exe'
+            - 'Installutil.exe'
+            - 'Mavinject.exe'
+            - 'Microsoft.Workflow.Compiler.exe'
+            - 'Msbuild.exe'
+            - 'Msdt.exe'
+            - 'Odbcconf.exe'
+            - 'Presentationhost.exe'
+            - 'Regsvr32.exe'
+            - 'SQLToolsPS.exe'
+            - 'Sqlps.exe'
+            - 'SyncAppvPublishingServer.exe'
+            - 'atbroker.exe'
+            - 'bash.exe'
+            - 'bitsadmin.exe'
+            - 'cdb.exe'
+            - 'cmstp.exe'
+            - 'csi.exe'
+            - 'devtoolslauncher.exe'
+            - 'dnscmd.exe'
+            - 'dnx.exe'
+            - 'dxcap.exe'
+            - 'extexport.exe'
+            - 'forfiles.exe'
+            - 'ftp.exe'
+            - 'hh.exe'
+            - 'ieexec.exe'
+            - 'installutil.exe'
+            - 'jjs.exe'
+            - 'mavinject.exe'
+            - 'mftrace.exe'
+            - 'msdt.exe'
+            - 'mshta.exe'
+            - 'msiexec.exe'
+            - 'msxsl.exe'
+            - 'odbcconf.exe'
+            - 'presentationhost.exe'
+            - 'regasm.exe'
+            - 'regsvcs.exe'
+            - 'runonce.exe'
+            - 'runscripthelper.exe'
+            - 'schtasks.exe'
+            - 'scriptrunner.exe'
+            - 'squirrel.exe'
+            - 'tracker.exe'
+            - 'verclsid.exe'
+            - 'vsjitdebugger.exe'
+            - 'wmic.exe'
+            - 'wsl.exe'
+            - 'xwizard.exe'
+            - 'net.exe'
+            - 'net1.exe' # LOLBINS LIST END
+    condition: selection
+falsepositives:
+    - An internal logic that uses system binaries like powershell, cmd etc. to perform its tasks is rare.
+    - The reliance on the surrounding environment may necessitate the implementation of additional filtering measures to prevent false positives.
+level: high
